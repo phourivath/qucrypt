@@ -419,11 +419,11 @@ export default function BB84Simulator() {
                       setErrorEstimation(false);
                       setErrorCorrection(false);
                     }}
-                    disabled={binaryString.length < 128}
+                    disabled={binaryString.length < 256}
                   />
                   <Label
                     htmlFor="noise-toggle"
-                    className={`text-sm cursor-pointer ${binaryString.length < 128 ? 'opacity-50' : ''}`}
+                    className={`text-sm cursor-pointer ${binaryString.length < 256 ? 'opacity-50' : ''}`}
                   >
                     Enable Channel Noise
                   </Label>
@@ -434,9 +434,9 @@ export default function BB84Simulator() {
                   interference. This will introduce a small error rate (~5%)
                   even without eavesdropping.
                 </CardDescription>
-                {binaryString.length < 128 && (
+                {binaryString.length < 256 && (
                   <CardDescription className="text-amber-600 dark:text-amber-400">
-                    Note: Channel noise requires at least 128 bits (16
+                    Note: Channel noise requires at least 256 bits (16
                     characters) to be enabled. With shorter key, the small
                     sample size after basis sifting could cause normal noise to
                     be misidentified as eavesdropping.
@@ -699,7 +699,7 @@ export default function BB84Simulator() {
                 <div className="space-y-4">
                   {/* Bob's Bases */}
                   <p className="text-sm font-medium mb-2">Bob's Bases:</p>
-                  <BasisSelector bases={bobBases} onToggle={() => {}} />
+                  <BasisSelector bases={bobBases} onToggle={() => { }} />
 
                   <p className="text-sm font-medium mb-2">
                     Alice says the correct bases are index:{' '}
@@ -755,7 +755,7 @@ export default function BB84Simulator() {
                   </p>
                   <BasisSelector
                     bases={bobBases}
-                    onToggle={() => {}}
+                    onToggle={() => { }}
                     opacity={(index) => bases[index] === bobBases[index]}
                   />
 
@@ -973,12 +973,11 @@ export default function BB84Simulator() {
                                       <Badge
                                         key={`${index}-${bit}`}
                                         variant="outline"
-                                        className={`w-10 h-10 flex text-lg rounded-md ${
-                                          block.errorIndex ===
-                                          block.indices[index]
+                                        className={`w-10 h-10 flex text-lg rounded-md ${block.errorIndex ===
+                                            block.indices[index]
                                             ? 'bg-primary text-primary-foreground font-bold border-primary'
                                             : ''
-                                        }`}
+                                          }`}
                                       >
                                         {bit}
                                       </Badge>
