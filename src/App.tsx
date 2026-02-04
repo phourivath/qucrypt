@@ -14,6 +14,7 @@ import { Badge } from './components/ui/badge';
 import { Button } from './components/ui/button';
 import { Checkbox } from './components/ui/checkbox';
 import { Label } from './components/ui/label';
+import type { BinaryBlock } from './types/binaryBlock';
 
 export default function BB84Simulator() {
   const [inputText, setInputText] = useState('');
@@ -40,13 +41,7 @@ export default function BB84Simulator() {
       blocksChecked: number;
       errorsFound: number;
       correctedKey: string[];
-      blocks: Array<{
-        indices: number[];
-        aliceParity: number;
-        bobParity: number;
-        hasError: boolean;
-        errorIndex?: number;
-      }>;
+      blocks: Array<BinaryBlock>;
     }>
   >([]);
 
@@ -179,13 +174,7 @@ export default function BB84Simulator() {
       blocksChecked: number;
       errorsFound: number;
       correctedKey: string[];
-      blocks: Array<{
-        indices: number[];
-        aliceParity: number;
-        bobParity: number;
-        hasError: boolean;
-        errorIndex?: number;
-      }>;
+      blocks: Array<BinaryBlock>;
     }> = [];
 
     const currentBobKey = [...usableKey];
@@ -204,13 +193,7 @@ export default function BB84Simulator() {
       const blockSize = Math.max(4, Math.min(blockSizes[round], keyLength));
       let errorsFound = 0;
       let blocksChecked = 0;
-      const blockInfo: Array<{
-        indices: number[];
-        aliceParity: number;
-        bobParity: number;
-        hasError: boolean;
-        errorIndex?: number;
-      }> = [];
+      const blockInfo: Array<BinaryBlock> = [];
 
       // Shuffle indices for rounds after the first
       let indices = Array.from({ length: keyLength }, (_, i) => i);
