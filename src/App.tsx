@@ -68,6 +68,11 @@ export default function BB84Simulator() {
       setEveBases([]);
       setBobBases([]);
     }
+    // Realistic (noise) mode requires at least 256 bits. If the secret is
+    // shortened below that, untick it so it can't stay enabled.
+    if (binaryString.length < 256) {
+      setNoiseEnabled(false);
+    }
     setTransmitted(false);
     setAliceBasisVisible(true);
     setEveIntercepted(false);
@@ -444,9 +449,9 @@ export default function BB84Simulator() {
                 </CardDescription>
                 {binaryString.length < 256 && (
                   <CardDescription className="text-amber-600 dark:text-amber-400">
-                    Note: To enable this mode, please write your secret text
-                    a bit longer. Short keys leave too few bits to tell real
-                    noise apart from eavesdropping.
+                    Note: To enable this mode, please write your secret text a
+                    bit longer. Short keys leave too few bits to tell real noise
+                    apart from eavesdropping.
                   </CardDescription>
                 )}
 
@@ -505,20 +510,20 @@ export default function BB84Simulator() {
                 <CardDescription>
                   Eve catches the qubits before Bob does. But to read a qubit
                   she must measure it. Remeber the{' '}
-                  <span className="text-foreground font-medium">"bases"</span> we
-                  picked to encode the information?, yeah she need those exact
-                  thing to measure
-                  these qubit.
+                  <span className="text-foreground font-medium">"bases"</span>{' '}
+                  we picked to encode the information?, yeah she need those
+                  exact thing to measure these qubit.
                   <br />
                   <br />
-                  To bad for her, becuase she never knows Alice's chosen bases. So
-                  she have to guess (don't be cheating and went up and look xD)
+                  To bad for her, becuase she never knows Alice's chosen bases.
+                  So she have to guess (don't be cheating and went up and look
+                  xD)
                 </CardDescription>
 
                 <p className="text-sm font-medium">Eve's Measurement Bases:</p>
                 <BasisSelector bases={eveBases} onToggle={toggleEveBasis} />
 
-                <div className="flex gap-2 justify-end">
+                <div className="flex flex-wrap gap-2 justify-end">
                   <Button
                     variant="secondary"
                     onClick={() => {
