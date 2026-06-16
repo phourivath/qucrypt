@@ -167,6 +167,15 @@ export default function BB84Simulator() {
 
   const hasEavesdropping = errorRate > 11;
 
+  // The simulation can end on three different routes:
+  //  - basic run with no noise/Eve finishes at the Result card
+  //  - error estimation aborts because eavesdropping was detected
+  //  - the Cascade error correction completes
+  const simulationFinished =
+    (results && !noiseEnabled && !eveEnabled) ||
+    (errorEstimation && hasEavesdropping) ||
+    errorCorrection;
+
   const runCascadeProtocol = () => {
     const rounds: Array<{
       round: number;
@@ -289,8 +298,9 @@ export default function BB84Simulator() {
                   BB84 Quantum Key Distribution Simulator
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Interactive simulation demonstrating quantum key distribution
-                  and eavesdropping detection
+                  Watch Alice and Bob build a shared secret key out of single
+                  particles of light - and see how any eavesdropper, Eve, gives
+                  herself away.
                 </p>
               </div>
               <ModeToggle />
@@ -302,9 +312,9 @@ export default function BB84Simulator() {
             <CardContent className="flex flex-col gap-5">
               <CardTitle className="text-xl">Alice's Secret Key</CardTitle>
               <CardDescription>
-                Pretend that you are Alice and you want to send a secret key to
-                Bob. First, you write your key which will be converted into bits
-                (0s and 1s) for quantum operations.
+                Alice wants to send Bob a secret key. She first writes it out
+                (Please write any random text in her place). The simulator will
+                convert the text to bits - plain 0s and 1s
               </CardDescription>
 
               <Input
@@ -336,11 +346,19 @@ export default function BB84Simulator() {
                   Alice's Transmission Bases
                 </CardTitle>
                 <CardDescription>
-                  Now you (Alice) choose a random basses for each bit: +
-                  (rectilinear) or x (diagonal). This is like choosing a secret
-                  encoding for your key. You can select bases manually or
-                  randomize them. Once ready, click "Transmit" to send the
-                  qubits to Bob through the quantum channel.
+                  Normally this would be sent over the internet as ordinary bits
+                  - but not here. We use qubits: single particles of light
+                  (photons). It will also be sent over a different channel
+                  called the{' '}
+                  <span className="text-foreground font-medium">
+                    "quantum channel"
+                  </span>
+                  .
+                  <br />
+                  <br />
+                  To encode each bit as a qubit, we first pick a random basis, +
+                  or x. Right now only Alice knows which basis she chose. Click
+                  Transmit to send the qubits to Bob.
                 </CardDescription>
                 {aliceBasisVisible ? (
                   <BasisSelector bases={bases} onToggle={toggleBasis} />
@@ -369,7 +387,7 @@ export default function BB84Simulator() {
                     }}
                     disabled={transmitted}
                   >
-                    Randomize Bases
+                    Randomize for me!!!
                   </Button>
                   <Button
                     onClick={() => {
@@ -381,6 +399,12 @@ export default function BB84Simulator() {
                     Transmit
                   </Button>
                 </div>
+
+                <CardTitle className="text-xl">Advanced Simulation</CardTitle>
+                <CardDescription className="text-white">
+                  Don't be intimidated! You may skip these options on your first
+                  run.
+                </CardDescription>
 
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -408,21 +432,21 @@ export default function BB84Simulator() {
                     htmlFor="noise-toggle"
                     className={`text-sm cursor-pointer ${binaryString.length < 256 ? 'opacity-50' : ''}`}
                   >
-                    Enable Channel Noise
+                    Give me realistic version
                   </Label>
                 </div>
                 <CardDescription>
-                  Channel noise simulates natural errors in the quantum channel
-                  due to photon loss, detector inefficiency, or environmental
-                  interference. This will introduce a small error rate (~5%)
-                  even without eavesdropping.
+                  Real quantum channels aren't perfect. Lost photons (light),
+                  imperfect detectors, and other interferences, making the bits
+                  flips on their own, adding a small error rate (~5%) even when
+                  no one is eavesdropping. This is called{' '}
+                  <span className="text-foreground font-medium">"Noise"</span>.
                 </CardDescription>
                 {binaryString.length < 256 && (
                   <CardDescription className="text-amber-600 dark:text-amber-400">
-                    Note: Channel noise requires at least 256 bits (16
-                    characters) to be enabled. With shorter key, the small
-                    sample size after basis sifting could cause normal noise to
-                    be misidentified as eavesdropping.
+                    Note: To enable this mode, please write your secret text
+                    a bit longer. Short keys leave too few bits to tell real
+                    noise apart from eavesdropping.
                   </CardDescription>
                 )}
 
@@ -457,12 +481,13 @@ export default function BB84Simulator() {
                     htmlFor="eve-toggle"
                     className="text-sm cursor-pointer"
                   >
-                    Enable Eavesdropper (Eve)
+                    Introduce eavesdropper (Eve)
                   </Label>
                 </div>
                 <CardDescription>
-                  Eve is a malicious actor in this communication. She trys to
-                  look into the qubits to extract their information.
+                  Eve is the eavesdropper. She secretly taps the channel and
+                  tries to read each qubit as it travels from Alice to Bob,
+                  hoping to steal the key unnoticed.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -478,9 +503,16 @@ export default function BB84Simulator() {
                   </CardTitle>
                 </div>
                 <CardDescription>
-                  Eve intercepts the qubits in the quantum channel before they
-                  reach Bob. To extract the information from the qubits however,
-                  she need to guess the measurement bases.
+                  Eve catches the qubits before Bob does. But to read a qubit
+                  she must measure it. Remeber the{' '}
+                  <span className="text-foreground font-medium">"bases"</span> we
+                  picked to encode the information?, yeah she need those exact
+                  thing to measure
+                  these qubit.
+                  <br />
+                  <br />
+                  To bad for her, becuase she never knows Alice's chosen bases. So
+                  she have to guess (don't be cheating and went up and look xD)
                 </CardDescription>
 
                 <p className="text-sm font-medium">Eve's Measurement Bases:</p>
@@ -497,7 +529,7 @@ export default function BB84Simulator() {
                       );
                     }}
                   >
-                    Randomize Bases
+                    Randomize for me again
                   </Button>
                   <Button
                     variant="destructive"
@@ -533,15 +565,15 @@ export default function BB84Simulator() {
                   Eve's Measurement Results
                 </CardTitle>
                 <CardDescription>
-                  Eve measured the qubits using her chosen bases. When her basis
-                  matched Alice's, she got the correct bit. When it didn't
-                  match, she got a random result (50/50 chance).
+                  Here's the catch: when Eve's guessed basis matches Alice's,
+                  she reads the bit correctly. When it doesn't, measuring
+                  disturbs the qubit and she gets a random result, either 1 or
+                  0.
                 </CardDescription>
                 <CardDescription>
-                  After measuring, Eve must resend qubits to Bob (otherwise Bob
-                  would notice nothing arrived). She prepares new qubits based
-                  on her measurement results and her chosen bases. This
-                  introduces errors that will reveal her presence.
+                  After measuring, Eve must fake new qubits to Bob (otherwise
+                  Bob would notice nothing arrived). This introduces errors that
+                  will reveal her presence.
                 </CardDescription>
 
                 <div className="flex flex-wrap gap-1">
@@ -568,24 +600,22 @@ export default function BB84Simulator() {
                   Bob's Measurement Bases
                 </CardTitle>
                 <CardDescription>
-                  Bob receives your qubits but doesn't know which bases you
-                  used. He must randomly choose his own measurement bases (+ or
-                  x) to each qubit. When Bob's basis matches yours, he correctly
-                  measures the bit. When bases don't match, he gets a random
-                  result (50/50 chance).
+                  Bob receives the qubits but doesn't know Alice's bases as
+                  well. For each one he picks his own basis at random. When it
+                  matches Alice's, he reads the bit correctly; when it doesn't,
+                  measuring scrambles it into a random result.
                 </CardDescription>
                 {eveIntercepted && (
                   <CardDescription className="text-red-600 dark:text-red-400">
-                    These qubits have been intercepted and measured by Eve! Bob
-                    is actually measuring the qubits that Eve prepared based on
-                    her measurements, not Alice's original qubits.
+                    Warning: these qubits passed through Eve. Bob is measuring
+                    the replacements she sent, not Alice's originals — so Eve's
+                    guessing errors are already baked into what Bob receives.
                   </CardDescription>
                 )}
                 <CardDescription>
-                  But… we don't have anyone else to role-play as Bob. You can
-                  ask a friend to do it, or… pretend you are Bob and try to
-                  measure the qubits without knowing the bases you just chose.
-                  Click "measure" when you are done :D
+                  In a real run Bob is a separate person. Here there's no one
+                  else, so play Bob yourself: measure the qubits without peeking
+                  at the bases you just chose. Click Measure when ready.
                 </CardDescription>
                 <BasisSelector bases={bobBases} onToggle={toggleBobBasis} />
                 <div className="flex gap-2 justify-end">
@@ -599,7 +629,7 @@ export default function BB84Simulator() {
                       );
                     }}
                   >
-                    Randomize Bases
+                    Randomize again...
                   </Button>
                   <Button
                     onClick={() => {
@@ -647,10 +677,9 @@ export default function BB84Simulator() {
                   Bob's Measurement Results
                 </CardTitle>
                 <CardDescription>
-                  Now you (Bob) has measured the qubits using the chosen bases.
-                  Here are the results you got. Some bits might be correct, and
-                  some might be wrong depending on whether the bases matched
-                  Alice's.
+                  Bob has now measured every qubit. Some results match Alice's
+                  original bits and some don't, depending on whether his basis
+                  happened to match hers for that qubit.
                 </CardDescription>
                 <div className="flex flex-wrap gap-1">
                   <BinaryDisplay bits={bobMeasurements} />
@@ -670,19 +699,22 @@ export default function BB84Simulator() {
               <CardContent className="flex flex-col gap-5">
                 <CardTitle className="text-xl">Bases Comparison</CardTitle>
                 <CardDescription>
-                  Now, how do we get the correct result you may ask? At this
-                  stage, Bob will publicly announce his bases, and alice will
-                  say which position is match.
+                  So how do they find the bits they can trust? Bob publicly
+                  announces only which basis he used for each qubit, and Alice
+                  replies which positions match the basis she used.
                 </CardDescription>
                 <CardDescription>
                   The key points here are:
-                  <p> - Bob reveals only his bases, not the measured bits</p>
-                  <p> - He can share this in a classical channel</p>
+                  <p> - Bob reveals only his bases, never the measured bits</p>
+                  <p>
+                    {' '}
+                    - He can announce them over an ordinary (classical) channel
+                  </p>
                 </CardDescription>
                 <div className="space-y-4">
                   {/* Bob's Bases */}
                   <p className="text-sm font-medium mb-2">Bob's Bases:</p>
-                  <BasisSelector bases={bobBases} onToggle={() => { }} />
+                  <BasisSelector bases={bobBases} onToggle={() => {}} />
 
                   <p className="text-sm font-medium mb-2">
                     Alice says the correct bases are index:{' '}
@@ -720,16 +752,16 @@ export default function BB84Simulator() {
               <CardContent className="flex flex-col gap-5">
                 <CardTitle className="text-xl">Result</CardTitle>
                 <CardDescription>
-                  After knowing the correct bases, Bob discards all bits
-                  measured with mismatched bases and keeps only the remaining
-                  bits as the shared secret key. This is called{' '}
+                  Wherever their bases matched, Alice and Bob hold the same bit.
+                  They throw away every position where the bases differed and
+                  keep the rest as the shared secret key. This is called{' '}
                   <span className="text-primary">Basis Sifting</span>.
                 </CardDescription>
                 <CardDescription>
-                  You may ask why we need to do this. Remember that the wrong
-                  bases measure qubits in random (50/50), there is no way of
-                  knowing if those bits are correct or not, so we must discard
-                  them.
+                  Why discard them? When the bases differ, the qubit was
+                  measured the wrong way, so the bit is random to either 1 or 0
+                  as mentioned before there's no way to know if it's right.
+                  Useless bits, so they go.
                 </CardDescription>
                 <div className="space-y-4">
                   {/* Bob's Correct Bases */}
@@ -738,7 +770,7 @@ export default function BB84Simulator() {
                   </p>
                   <BasisSelector
                     bases={bobBases}
-                    onToggle={() => { }}
+                    onToggle={() => {}}
                     opacity={(index) => bases[index] === bobBases[index]}
                   />
 
@@ -778,15 +810,15 @@ export default function BB84Simulator() {
               <CardContent className="flex flex-col gap-5">
                 <CardTitle className="text-xl">Error Estimation</CardTitle>
                 <CardDescription>
-                  Before using the key, Alice and Bob need to check if anyone
-                  (like Eve) intercepted the transmission. They do this by
-                  comparing a random subset of their bits over a public channel.
+                  Before trusting the key, Alice and Bob check whether anyone
+                  listened in. They publicly compare a small random sample of
+                  their kept bits and count how often the two disagree.
                 </CardDescription>
                 <CardDescription>
-                  If the error rate is higher than 11%, it indicates potential
-                  eavesdropping. In real QKD systems, they would abort and start
-                  over. If the error rate is acceptable, they proceed to error
-                  correction.
+                  An eavesdropper's wrong guesses leave errors behind. If more
+                  than 11% of the sampled bits disagree, someone was likely
+                  listening - real systems abort and restart. Below that, they
+                  move on to fix the few remaining errors.
                 </CardDescription>
 
                 <div className="border-t space-y-2 pt-4">
@@ -880,10 +912,10 @@ export default function BB84Simulator() {
                   Error Correction - Cascade Protocol
                 </CardTitle>
                 <CardDescription>
-                  The Cascade protocol uses parity checks and binary search to
-                  locate and correct errors in the shared key. It works in
-                  multiple rounds with different block sizes and shuffled
-                  positions to catch all errors.
+                  The Cascade protocol fixes the remaining errors. It splits the
+                  key into blocks and checks each block's parity - whether it
+                  holds an even or odd number of 1s. A mismatch reveals an
+                  error, which it pins down over several shuffled rounds.
                 </CardDescription>
 
                 <div className="space-y-6">
@@ -956,11 +988,12 @@ export default function BB84Simulator() {
                                       <Badge
                                         key={`${index}-${bit}`}
                                         variant="outline"
-                                        className={`w-10 h-10 flex text-lg rounded-md ${block.errorIndex ===
-                                            block.indices[index]
+                                        className={`w-10 h-10 flex text-lg rounded-md ${
+                                          block.errorIndex ===
+                                          block.indices[index]
                                             ? 'bg-primary text-primary-foreground font-bold border-primary'
                                             : ''
-                                          }`}
+                                        }`}
                                       >
                                         {bit}
                                       </Badge>
@@ -1008,12 +1041,95 @@ export default function BB84Simulator() {
                       Error Correction Complete
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
-                      The Cascade protocol has completed {cascadeRounds.length}{' '}
-                      rounds of error correction. Alice and Bob now share an
-                      identical secret key that can be used for secure
-                      communication.
+                      Done. After {cascadeRounds.length} rounds of Cascade,
+                      Alice and Bob hold an identical secret key — known only to
+                      them and ready to encrypt real messages.
                     </p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Q&A Card */}
+          {simulationFinished && (
+            <Card className="shadow-none mt-8">
+              <CardContent className="flex flex-col gap-5">
+                <CardTitle className="text-xl">
+                  Wait, I have questions...
+                </CardTitle>
+                <CardDescription>
+                  You made it to the end. A few things probably feel odd right
+                  now, so let's clear them up.
+                </CardDescription>
+
+                <div className="space-y-1">
+                  <p className="text-sm text-foreground font-medium">
+                    So... where's my secret text? This final key looks like
+                    gibberish.
+                  </p>
+                  <CardDescription>
+                    It's supposed to look like gibberish. BB84 never sends your
+                    message - it builds a shared{' '}
+                    <span className="text-foreground font-medium">
+                      random key
+                    </span>
+                    . The text you typed was only a source of random bits, and
+                    its meaning is thrown away on purpose. So yes, this is for{' '}
+                    <span className="text-foreground font-medium">
+                      secrecy only
+                    </span>
+                    : anything you wrote with meaning is gone. Alice and Bob
+                    later use this key to encrypt a real message (for example
+                    with a one-time pad).
+                  </CardDescription>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-sm text-foreground font-medium">
+                    Why is the final key so much shorter than what I typed?
+                  </p>
+                  <CardDescription>
+                    About half the bits are dropped during{' '}
+                    <span className="text-foreground font-medium">
+                      basis sifting
+                    </span>{' '}
+                    (where Alice's and Bob's bases didn't match), and a random
+                    sample is spent during error estimation. Losing more than
+                    half of your bits is completely normal.
+                  </CardDescription>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-sm text-foreground font-medium">
+                    Why can't Eve just copy each qubit and measure it later?
+                  </p>
+                  <CardDescription>
+                    Because of the{' '}
+                    <span className="text-foreground font-medium">
+                      no-cloning theorem
+                    </span>
+                    : an unknown quantum state cannot be copied. Eve has to
+                    measure as the qubit flies past, and measuring in the wrong
+                    basis disturbs it - which is exactly what gives her away.
+                  </CardDescription>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-sm text-foreground font-medium">
+                    If they can talk on the classical channel, why not just send
+                    the key there?
+                  </p>
+                  <CardDescription>
+                    The{' '}
+                    <span className="text-foreground font-medium">
+                      classical channel
+                    </span>{' '}
+                    is public - anyone, including Eve, can listen. So Alice and
+                    Bob only exchange bases and parities there, never the key
+                    bits themselves. The secrecy comes from the quantum channel,
+                    where any eavesdropping leaves detectable traces.
+                  </CardDescription>
                 </div>
               </CardContent>
             </Card>
